@@ -24,4 +24,7 @@
                                                        day8.re-frame.tracing/trace-enabled? true}}
                   :devtools {:http-root "public"
                              :http-port 3000
-                             :preloads [day8.re-frame-10x.preload]}}}}
+                             :preloads [day8.re-frame-10x.preload]}}
+            :test {:target :karma
+                   :ns-regexp "-tests$"
+                   :output-to  "target/ci.js"}}}
