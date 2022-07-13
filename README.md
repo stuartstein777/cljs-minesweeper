@@ -1,2 +1,3 @@
-# cljs-brainfuck-interpreter
-Brainfuck interpreter in CLJS and Reframe
+# Minesweeper
+
+It's minesweeper in CLJS. That's it.

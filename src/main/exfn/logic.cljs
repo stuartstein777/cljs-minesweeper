@@ -56,8 +56,5 @@
                     up-to-check (update-to-check to-check neighbours revealed)]
                 (recur (set/difference up-to-check #{cur}) (conj revealed cur) board))
 
-              (= :mine board-item)
-              (recur (set/difference to-check #{cur}) revealed board)
-
               :else
               (recur (set/difference to-check #{cur}) (conj revealed cur) board))))))
