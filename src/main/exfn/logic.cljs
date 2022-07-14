@@ -58,3 +58,14 @@
 
               :else
               (recur (set/difference to-check #{cur}) (conj revealed cur) board))))))
+
+(defn get-num-colour [n]
+  (condp = n
+    1 :blue
+    2 :green
+    3 :red
+    4 "#050954"
+    5 "#7141b"
+    6 "#10d8e3"
+    7 :black
+    8 "#4e4f4f"))

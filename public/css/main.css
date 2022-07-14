@@ -1,5 +1,6 @@
 body{
     background-color: #434c5e;
+    color: #dededc;
 }
 
 .board {
@@ -45,12 +46,18 @@ body{
 }
 
 .number {
-    display: inline;
+    display: block;
     text-align: center;
+    font-size: 1em;
 }
 
 .game-over {
     color: red;
     font-size: 2.5em;
     display: none;
+}
+
+.mines {
+    font-size: 2.5em;
+    text-align: center;
 }

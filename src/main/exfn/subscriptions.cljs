@@ -20,3 +20,7 @@
 (rf/reg-sub
  :game-over?
  (fn [db _] (db :game-over?)))
+
+(rf/reg-sub
+ :mines
+ (fn [db _] (db :mines)))

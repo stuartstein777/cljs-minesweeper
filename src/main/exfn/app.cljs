@@ -31,7 +31,8 @@
                               :on-click #(rf/dispatch-sync [:cell-click [x y]])}
              (when (and (revealed [x y]) (> cell-contents 0))
                [:p.number {:style {:height side-length
-                                   :width side-length}}
+                                   :width side-length
+                                   :color (ms/get-num-colour cell-contents)}}
                 (str cell-contents)])]))])]))
 
 ;; -- App -------------------------------------------------------------------------
@@ -43,12 +44,28 @@
       [:div.board
        [board]]]
      [:div.col
-      [:div.row
-       [:div.col
-        (let [game-over? @(rf/subscribe [:game-over?])]
-          [:p.game-over 
+      (let [game-over? @(rf/subscribe [:game-over?])
+            mines @(rf/subscribe [:mines])]
+        [:div
+         [:div.row
+          [:i.fas.fa-flag.mines]]
+         [:div.row
+          [:p.mines (str "0/" mines)]]
+         [:div.row
+          [:i.fas.fa-clock.mines]]
+         [:div.row
+          [:p.mines "00:00"]]
+         [:div.row
+          [:button.btn-primary
+           {:style {:width "200px"
+                    :text-align :center
+                    :display :inline}
+            :on-click #(rf/dispatch-sync [:initialize])}
+           "New Game"]]
+         [:div.row
+          [:p.game-over
            {:style {:display (if game-over? :inline :none)}}
-           "Game over!"])]]]]])
+           "Game over!"]]])]]])
 
 ;; -- After-Load --------------------------------------------------------------------
 ;; Do this after the page has loaded.
@@ -68,16 +85,15 @@
   
   (rf/dispatch-sync [:set-game-over])
 
-  (rf/dispatch-sync [:reset])
-  
-  [[:blank 1 :mine]
-   [:blank 1 1]
-   [:blank :blank :blank]]
+  (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [16 16] :mines 40})
+                             :mines 40
+                             :revealed #{}
+                             :game-over? false}])
 
-  [[:blank  :blank  :blank :blank :blank]
-   [:blank     1       1      1   :blank]
-   [:blank     1    :mine     1   :blank]
-   [:blank     1       1      1   :blank]
-   [:blank  :blank  :blank :blank :blank]]
-  
+  (rf/dispatch-sync [:reset {:board [[0 1 :mine]
+                                     [0 1 1]
+                                     [0 0 0]]
+                             :mines 1
+                             :revealed #{}
+                             :game-over? false}])
   )

@@ -9,6 +9,7 @@
    {:board (bf/generate-full-board {:dimensions [16 16] :mines 40})
     :revealed #{}
     :flags #{}
+    :mines 40
     :running? false
     :game-over? false}))
 
@@ -39,12 +40,8 @@
 
 (rf/reg-event-db
  :reset
- (fn [db _]
-   (-> db
-       (assoc :game-over? false)
-       (assoc :board (bf/generate-full-board {:dimensions [16 16] :mines 40}))
-       (assoc :revealed #{}))
-   ))
+ (fn [db [_ game]]
+   game))
 
 (comment
   (let [db {:revealed #{[1 1] [2 2] [3 3]}}
