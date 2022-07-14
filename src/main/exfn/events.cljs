@@ -5,5 +5,7 @@
 (rf/reg-event-db
  :initialize
  (fn [_ _]
-   {:board []}))
-
+   {:board (bf/generate-full-board {:dimensions [16 16] :mines 40})
+    :revealed #{}
+    :flags #{}
+    :running? false}))
