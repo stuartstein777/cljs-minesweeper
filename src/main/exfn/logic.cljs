@@ -63,3 +63,28 @@
   (let [total-cells (count board)]
     (= (+ (count revealed) mines)
        (* total-cells total-cells))))
+
+(defn get-cell-if-mine [board cell]
+  (if (= :mine (get-in board cell))
+    cell
+    nil))
+
+(defn reveal-with-flags [flags board cell]
+  (let [neighbours (get-neighbours (count board) (count board) cell)
+        neighbours-flag-count (count (keep flags neighbours))
+        cell-num (get-in board cell)]
+    (if (= cell-num neighbours-flag-count)
+      ;; get all the contents of revealed cells, if any contain a mine return :mine-revealed
+      ;; else return the neighbour coords in a set.
+      ;; dont include mines that are covered by flags
+      (do
+        (prn "Neighbours:: " neighbours)
+        (prn "Flags:: " flags)
+        (prn )
+        (if (-> (keep (partial get-cell-if-mine board) neighbours)
+                (set)
+                (set/difference flags)
+                empty?) ;; if set is empty, then no mines revealed
+          (set/difference neighbours flags)
+          :revealed-mine))
+      #{})))
