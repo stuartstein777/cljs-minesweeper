@@ -10,7 +10,9 @@
         board-width (count board)
         side-length (/ 896 board-width)
         revealed    @(rf/subscribe [:revealed])
-        flags       @(rf/subscribe [:flags])]
+        flags       @(rf/subscribe [:flags])
+        game-won?   @(rf/subscribe [:game-won?])
+        game-over?   @(rf/subscribe [:game-over?])]
     [:div
      (for [x (range board-width)]
        [:div.row {:style {:width "100%"
@@ -35,6 +37,12 @@
                                                  (.stopPropagation e))}
 
              (cond
+
+               (and (or game-over? game-won?)
+                    (= cell-contents :mine))
+               [:p.flag
+                [:i.fas.fa-bomb]]
+               
                (and (revealed [x y]) (> cell-contents 0))
                [:p.number {:style {:height side-length
                                    :width side-length
@@ -47,7 +55,7 @@
                 [:i.fas.fa-flag
                  {:style {:display :inline
                           :text-align :center}}]]
-               
+
                :else
                [:p.debug cell-contents])]))])]))
 
@@ -106,8 +114,8 @@
   
   (rf/dispatch-sync [:set-game-over])
 
-  (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [16 16] :mines 40})
-                             :mines 40
+  (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [8 8] :mines 8})
+                             :mines 8
                              :revealed #{}
                              :game-over? false
                              :flags #{}}])
