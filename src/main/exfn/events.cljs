@@ -57,12 +57,5 @@
 
 (rf/reg-event-db
  :reset
- (fn [db [_ game]]
+ (fn [_ [_ game]]
    game))
-
-(comment
-  (let [flags #{[1 1] [2 2] [3 3] [4 4] [5 5]}]
-    (set/difference flags #{[4 4]})
-    )
-  
-  )

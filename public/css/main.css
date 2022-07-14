@@ -68,6 +68,9 @@ body{
     color: #811313;
     text-align: center;
     display: block;
+    font-size: 1.0vw;
+    height: auto;
+    width: auto;
 }
 
 .debug {
