@@ -14,7 +14,7 @@
     [:div
      (for [x (range board-width)]
        [:div.row {:style {:width "100%"
-                          :height side-length ;; take off 1 for border
+                          :height side-length
                           :margin 0
                           :padding 0}}
         (for [y (range board-width)]
@@ -62,7 +62,8 @@
      [:div.col
       (let [game-over? @(rf/subscribe [:game-over?])
             mines @(rf/subscribe [:mines])
-            flags @(rf/subscribe [:flags])]
+            flags @(rf/subscribe [:flags])
+            game-won? @(rf/subscribe [:game-won?])]
         [:div
          [:div.row
           [:i.fas.fa-flag.mines]]
@@ -81,8 +82,11 @@
            "New Game"]]
          [:div.row
           [:p.game-over
-           {:style {:display (if game-over? :inline :none)}}
-           "Game over!"]]])]]])
+           {:style {:display (if (or game-over? game-won?) :inline :none)
+                    :color (if game-over? :red :yellow)}}
+           (if game-over?
+             "Game over!"
+             [:i.fas.fa-trophy])]]])]]])
 
 ;; -- After-Load --------------------------------------------------------------------
 ;; Do this after the page has loaded.
@@ -114,23 +118,6 @@
                              :mines 1
                              :flags #{}
                              :revealed #{}
+                             :game-won? false
                              :game-over? false}])
-  
-  (count [[0 1]
-          [0 10]
-          [0 8]
-          [5 3]
-          [0 7]
-          [0 9]
-          [8 11]
-          [12 10]
-          [2 6]
-          [6 11]
-          [3 12]
-          [1 9]
-          [10 4]
-          [5 8]
-          [9 8]
-          [13 7]
-          [7 6]])
-  )
+)

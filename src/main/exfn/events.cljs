@@ -11,11 +11,12 @@
     :flags #{}
     :mines 40
     :running? false
+    :game-won? false
     :game-over? false}))
 
 (rf/reg-event-db
  :cell-click
- (fn [{:keys [board revealed] :as db} [_ [x y]]]
+ (fn [{:keys [board revealed mines] :as db} [_ [x y]]]
    (prn x y)
    (let [contents (get-in board [x y])]
      (cond
@@ -28,12 +29,15 @@
              up-revealed (set/union new-revealed revealed)]
          (-> db
              (assoc :revealed up-revealed)
-             (assoc :flags (set/difference (db :flags) up-revealed))))
+             (assoc :flags (set/difference (db :flags) up-revealed))
+             (assoc :game-won? (bf/game-won? up-revealed board mines))))
 
        :else
-       (-> db
-           (update :revealed set/union #{[x y]})
-           (assoc :flags (set/difference (db :flags) #{[x y]})))))))
+       (let [up-revealed (set/union revealed #{[x y]})]
+         (-> db
+             (assoc :revealed up-revealed)
+             (assoc :flags (set/difference (db :flags) #{[x y]}))
+             (assoc :game-won? (bf/game-won? up-revealed board mines))))))))
 
 (rf/reg-event-db
  :toggle-flag

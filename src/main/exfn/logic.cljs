@@ -69,3 +69,8 @@
     6 "#10d8e3"
     7 :black
     8 "#4e4f4f"))
+
+(defn game-won? [revealed board mines]
+  (let [total-cells (count board)]
+    (= (+ (count revealed) mines)
+       (* total-cells total-cells))))

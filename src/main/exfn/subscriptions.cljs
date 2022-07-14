@@ -24,3 +24,7 @@
 (rf/reg-sub
  :mines
  (fn [db _] (db :mines)))
+
+(rf/reg-sub
+ :game-won?
+ (fn [db _] (db :game-won?)))
