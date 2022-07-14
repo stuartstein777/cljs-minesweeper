@@ -77,14 +77,10 @@
       ;; get all the contents of revealed cells, if any contain a mine return :mine-revealed
       ;; else return the neighbour coords in a set.
       ;; dont include mines that are covered by flags
-      (do
-        (prn "Neighbours:: " neighbours)
-        (prn "Flags:: " flags)
-        (prn )
-        (if (-> (keep (partial get-cell-if-mine board) neighbours)
-                (set)
-                (set/difference flags)
-                empty?) ;; if set is empty, then no mines revealed
-          (set/difference neighbours flags)
-          :revealed-mine))
+      (if (-> (keep (partial get-cell-if-mine board) neighbours)
+              (set)
+              (set/difference flags)
+              empty?) ;; if set is empty, then no mines revealed
+        (set/difference neighbours flags)
+        :revealed-mine)
       #{})))

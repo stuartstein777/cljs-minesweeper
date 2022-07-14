@@ -32,6 +32,23 @@
              (assoc :flags (set/difference (db :flags) up-revealed))
              (assoc :game-won? (bf/game-won? up-revealed board mines))))
 
+       ;; clicked a number, that isn't a blank cell. Reveal with flags
+       ;; the cell also has to be revealed
+       (and (number? contents) (revealed [x y]))
+       (let [revealed (bf/reveal-with-flags (db :flags) (db :board) [x y])]
+         (if (= :revealed-mine revealed)
+           (assoc db :game-over? true)
+           (let [up-revealed   (set/union revealed (db :revealed))
+                 also-revealed (bf/reveal revealed (db :revealed) board)
+                 fin-revealed  (set/union up-revealed also-revealed)
+                 updated-db    (-> db
+                                   (assoc :revealed fin-revealed)
+                                   (update :flags set/difference fin-revealed)
+                                   (assoc :game-won? (bf/game-won? up-revealed board mines)))]
+             ;; check if any revealed are blank.
+             ;; if so, call reveal on it.
+             updated-db)))
+
        :else
        (let [up-revealed (set/union revealed #{[x y]})]
          (-> db
@@ -59,3 +76,20 @@
  :reset
  (fn [_ [_ game]]
    game))
+
+(comment
+  
+  (let [board [[:mine      1    0     1     :mine    1]
+               [  1        2    1     2       1      1]
+               [  0        1  :mine   2       1      1]
+               [  1        2    1     2     :mine    1]
+               [:mine      2    0     1       1      1]
+               [:mine      2    0     0       0      0]]
+        flags  #{[2 2]}
+        cell [3 2]
+        revealed #{[2 3]}]
+    (bf/reveal-with-flags flags board cell)
+    )
+  
+  
+  )
