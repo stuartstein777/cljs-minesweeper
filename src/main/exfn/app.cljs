@@ -28,12 +28,28 @@
 
                                        :else
                                        "unrevealed-cell")
-                              :on-click #(rf/dispatch-sync [:cell-click [x y]])}
-             (when (and (revealed [x y]) (> cell-contents 0))
+                              :on-click #(rf/dispatch-sync [:cell-click [x y]])
+                              :on-context-menu (fn [e] 
+                                                 (rf/dispatch-sync [:toggle-flag [x y]])
+                                                 (.preventDefault e)
+                                                 (.stopPropagation e))}
+
+             (cond
+               (and (revealed [x y]) (> cell-contents 0))
                [:p.number {:style {:height side-length
                                    :width side-length
                                    :color (ms/get-num-colour cell-contents)}}
-                (str cell-contents)])]))])]))
+                (str cell-contents)]
+
+               (and (not (revealed [x y])) (flags [x y]))
+               [:p.flag {:style {:display :inline
+                                 :text-align :center}}
+                [:i.fas.fa-flag
+                 {:style {:display :inline
+                          :text-align :center}}]]
+               
+               :else
+               [:p.debug cell-contents])]))])]))
 
 ;; -- App -------------------------------------------------------------------------
 (defn app []
@@ -45,12 +61,13 @@
        [board]]]
      [:div.col
       (let [game-over? @(rf/subscribe [:game-over?])
-            mines @(rf/subscribe [:mines])]
+            mines @(rf/subscribe [:mines])
+            flags @(rf/subscribe [:flags])]
         [:div
          [:div.row
           [:i.fas.fa-flag.mines]]
          [:div.row
-          [:p.mines (str "0/" mines)]]
+          [:p.mines (str (count flags) "/" mines)]]
          [:div.row
           [:i.fas.fa-clock.mines]]
          [:div.row
@@ -88,12 +105,32 @@
   (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [16 16] :mines 40})
                              :mines 40
                              :revealed #{}
-                             :game-over? false}])
+                             :game-over? false
+                             :flags #{}}])
 
   (rf/dispatch-sync [:reset {:board [[0 1 :mine]
                                      [0 1 1]
                                      [0 0 0]]
                              :mines 1
+                             :flags #{}
                              :revealed #{}
                              :game-over? false}])
+  
+  (count [[0 1]
+          [0 10]
+          [0 8]
+          [5 3]
+          [0 7]
+          [0 9]
+          [8 11]
+          [12 10]
+          [2 6]
+          [6 11]
+          [3 12]
+          [1 9]
+          [10 4]
+          [5 8]
+          [9 8]
+          [13 7]
+          [7 6]])
   )

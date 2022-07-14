@@ -14,6 +14,8 @@ body{
 
 .unrevealed-cell {
     background-color: #babdb6;
+    display: inline;
+    text-align: center;
 }
 
 .revealed-cell {
@@ -60,4 +62,14 @@ body{
 .mines {
     font-size: 2.5em;
     text-align: center;
+}
+
+.flag {
+    color: #811313;
+    text-align: center;
+    display: block;
+}
+
+.debug {
+    color: #929292;
 }

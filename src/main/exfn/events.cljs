@@ -24,11 +24,24 @@
        (-> db (assoc :game-over? true))
 
        (= contents 0)
-       (let [revealed (bf/reveal #{[x y]} revealed board)]
-         (update db :revealed set/union revealed))
+       (let [new-revealed (bf/reveal #{[x y]} revealed board)
+             up-revealed (set/union new-revealed revealed)]
+         (-> db
+             (assoc :revealed up-revealed)
+             (assoc :flags (set/difference (db :flags) up-revealed))))
 
        :else
-       (update db :revealed set/union #{[x y]})))))
+       (-> db
+           (update :revealed set/union #{[x y]})
+           (assoc :flags (set/difference (db :flags) #{[x y]})))))))
+
+(rf/reg-event-db
+ :toggle-flag
+ (fn [{:keys [flags] :as db} [_ cell]]
+   (let [up-flags (if (flags cell)
+                    (set/difference flags #{cell})
+                    (conj flags cell))]
+     (assoc db :flags up-flags))))
 
 ;; dev test events. To remove.
 
@@ -44,11 +57,8 @@
    game))
 
 (comment
-  (let [db {:revealed #{[1 1] [2 2] [3 3]}}
-        revealed #{[2 2] [4 3] [1 0] [1 1] [3 3]}]
-    
-    (-> db
-        (update :revealed set/union revealed))
+  (let [flags #{[1 1] [2 2] [3 3] [4 4] [5 5]}]
+    (set/difference flags #{[4 4]})
     )
   
   )
