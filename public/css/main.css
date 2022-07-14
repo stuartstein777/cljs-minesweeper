@@ -48,3 +48,9 @@ body{
     display: inline;
     text-align: center;
 }
+
+.game-over {
+    color: red;
+    font-size: 2.5em;
+    display: none;
+}

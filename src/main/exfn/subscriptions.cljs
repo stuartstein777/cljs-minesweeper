@@ -17,3 +17,6 @@
  :board
  (fn [db _] (db :board)))
 
+(rf/reg-sub
+ :game-over?
+ (fn [db _] (db :game-over?)))

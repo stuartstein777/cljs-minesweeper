@@ -51,7 +51,7 @@
       revealed
       (let [cur (first to-check)
             board-item (get-in board cur)]
-        (cond (= :blank board-item)
+        (cond (= 0 board-item)
               (let [neighbours (get-neighbours cur)
                     up-to-check (update-to-check to-check neighbours revealed)]
                 (recur (set/difference up-to-check #{cur}) (conj revealed cur) board))

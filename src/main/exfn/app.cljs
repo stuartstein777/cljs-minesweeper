@@ -27,8 +27,9 @@
                                        "revealed-cell"
 
                                        :else
-                                       "unrevealed-cell")}
-             (when (and (revealed [x y]) (number? cell-contents))
+                                       "unrevealed-cell")
+                              :on-click #(rf/dispatch-sync [:cell-click [x y]])}
+             (when (and (revealed [x y]) (> cell-contents 0))
                [:p.number {:style {:height side-length
                                    :width side-length}}
                 (str cell-contents)])]))])]))
@@ -37,8 +38,17 @@
 (defn app []
   [:div.container
    [:h1 "Minesweeper"]
-   [:div.board
-    [board]]])
+    [:div.row
+     [:div.col
+      [:div.board
+       [board]]]
+     [:div.col
+      [:div.row
+       [:div.col
+        (let [game-over? @(rf/subscribe [:game-over?])]
+          [:p.game-over 
+           {:style {:display (if game-over? :inline :none)}}
+           "Game over!"])]]]]])
 
 ;; -- After-Load --------------------------------------------------------------------
 ;; Do this after the page has loaded.
@@ -55,6 +65,11 @@
 (defonce initialize (rf/dispatch-sync [:initialize]))
 
 (comment
+  
+  (rf/dispatch-sync [:set-game-over])
+
+  (rf/dispatch-sync [:reset])
+  
   [[:blank 1 :mine]
    [:blank 1 1]
    [:blank :blank :blank]]
