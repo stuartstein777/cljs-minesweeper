@@ -158,7 +158,12 @@
          [:div.row
           [:i.fas.fa-clock.mines]]
          [:div.row
-          [:p.mines (str (pad-zero (quot time 60)) ":" (pad-zero (rem time 60)))]]
+          [:p.mines (str (pad-zero (quot time 60)) ":" (pad-zero (rem time 60)))]
+          [:i.fas.fa-pause.mines {:style {:font-size "2.5em"
+                                          :padding-bottom 20
+                                          :cursor :pointer}}]
+          #_[:i.fas.fa-play.mines {:style {:font-size "1.2em"
+                                         }}]]
          [:div.row
           [:div {:style {:text-align :center}}
            [:button.btn-primary
