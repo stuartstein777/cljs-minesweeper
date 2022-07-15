@@ -163,7 +163,19 @@
 ;; -- App -------------------------------------------------------------------------
 (defn app []
   [:div.container
-   [:h1 "Minesweeper"]
+   [:div.row
+    [:div.col.col-lg-8
+     [:h1 "Minesweeper"]]
+    [:div.col.col-lg-4 {:style {:text-align :right
+                                :padding-right 50}}
+     [:i.fab.fa-github]
+     [:a {:href "https://github.com/stuartstein777/cljs-minesweeper"
+          :style {:text-decoration :none}}
+      " (repo) "]
+     "|"
+     [:a {:href "https://stuartstein777.github.io/"
+          :style {:text-decoration :none}}
+      " other projects"]]]
     [:div.row
      [:div.col
       [:div.board
@@ -180,7 +192,7 @@
          [:div.row
           [:i.fas.fa-flag.mines]]
          [:div.row
-          [:p.mines (str (count flags) "/" mines)]]
+          [:p.mines (str (count flags) "/" (or mines 0))]]
          [:div.row
           [:i.fas.fa-clock.mines]]
          [:div.row
@@ -239,7 +251,18 @@
                          (rf/dispatch-sync [:stop-timer])
                          (rf/dispatch-sync [:initialize [24 50]]))}
             [:div "New Game"]
-            [:div "(24x24 - 50 mines)"]]]]
+            [:div "(24x24 - 50 mines)"]]
+           [:button.btn-primary
+            {:style {:width "150px"
+                     :height "150px"
+                     :margin 10
+                     :text-align :center
+                     :display :inline}
+             :on-click (fn [_]
+                         (rf/dispatch-sync [:stop-timer])
+                         (rf/dispatch-sync [:initialize [32 80]]))}
+            [:div "New Game"]
+            [:div "(32x32 - 80 mines)"]]]]
          [:div.row
           [:div {:style {:text-align :center}}
            [:p.game-over
