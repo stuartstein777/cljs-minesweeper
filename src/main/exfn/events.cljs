@@ -3,6 +3,9 @@
             [exfn.logic :as bf]
             [clojure.set :as set]))
 
+(defn dispatch-timer-event []
+  (rf/dispatch [:tick]))
+
 (rf/reg-event-db
  :initialize
  (fn [_ _]
@@ -10,14 +13,57 @@
     :revealed #{}
     :flags #{}
     :mines 40
-    :running? false
+    :ticking? false
+    :ticker-handle nil
+    :time 0
     :game-won? false
     :game-over? false}))
 
 (rf/reg-event-db
+ :set-handle
+ (fn [db [_ handle]]
+   (assoc db :ticker-handle handle)))
+
+;; on tick, update the db time (in seconds) if we are currently ticking (not paused).
+(rf/reg-event-db
+ :tick
+ (fn [{:keys [ticking?] :as db} _]
+   (if ticking?
+     (update db :time inc)
+     db)))
+
+(rf/reg-fx
+ :start-ticker-incrementer
+ (fn [[handle]]
+   (when (nil? handle)
+     (rf/dispatch [:set-handle (js/setInterval dispatch-timer-event 1000)]))))
+
+(rf/reg-fx
+ :stop-ticker
+ (fn [[handle]]
+   (when (not (nil? handle))
+     (prn "stopping handle." handle)
+     (js/clearInterval handle))))
+
+(rf/reg-event-fx
+ :start-timer
+ (fn [{:keys [db]} _]
+   {:db (assoc db :ticking? true)    
+    :start-ticker-incrementer [(db :ticker-handle)]}))
+
+(rf/reg-event-fx
+ :stop-timer
+ (fn [{:keys [db]} _]
+   (prn "in :stop-timer")
+   (let [handle (db :ticker-handle)]
+     (prn db)
+     (prn "stopping timer. " handle)
+     {:db (assoc db :ticker-handle nil)
+      :stop-ticker [handle]})))
+
+(rf/reg-event-db
  :cell-click
  (fn [{:keys [board revealed mines] :as db} [_ [x y]]]
-   (prn x y)
    (let [contents (get-in board [x y])]
      (cond
 
@@ -41,20 +87,22 @@
            (let [up-revealed   (set/union revealed (db :revealed))
                  also-revealed (bf/reveal revealed (db :revealed) board)
                  fin-revealed  (set/union up-revealed also-revealed)
+                 game-won?     (bf/game-won? fin-revealed board mines)
                  updated-db    (-> db
                                    (assoc :revealed fin-revealed)
                                    (update :flags set/difference fin-revealed)
-                                   (assoc :game-won? (bf/game-won? up-revealed board mines)))]
+                                   (assoc :game-won? game-won?))]
              ;; check if any revealed are blank.
              ;; if so, call reveal on it.
              updated-db)))
 
        :else
-       (let [up-revealed (set/union revealed #{[x y]})]
+       (let [up-revealed (set/union revealed #{[x y]})
+             game-won? (bf/game-won? up-revealed board mines)]
          (-> db
              (assoc :revealed up-revealed)
              (assoc :flags (set/difference (db :flags) #{[x y]}))
-             (assoc :game-won? (bf/game-won? up-revealed board mines))))))))
+             (assoc :game-won? game-won?)))))))
 
 (rf/reg-event-db
  :toggle-flag
@@ -78,18 +126,6 @@
    game))
 
 (comment
-  
-  (let [board [[:mine      1    0     1     :mine    1]
-               [  1        2    1     2       1      1]
-               [  0        1  :mine   2       1      1]
-               [  1        2    1     2     :mine    1]
-               [:mine      2    0     1       1      1]
-               [:mine      2    0     0       0      0]]
-        flags  #{[2 2]}
-        cell [3 2]
-        revealed #{[2 3]}]
-    (bf/reveal-with-flags flags board cell)
-    )
-  
+
   
   )

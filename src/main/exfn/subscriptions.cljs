@@ -28,3 +28,11 @@
 (rf/reg-sub
  :game-won?
  (fn [db _] (db :game-won?)))
+
+(rf/reg-sub
+ :time
+ (fn [db _] (db :time)))
+
+(rf/reg-sub
+ :ticking?
+ (fn [db _] (db :ticking?)))

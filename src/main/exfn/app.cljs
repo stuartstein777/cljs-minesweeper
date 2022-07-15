@@ -3,7 +3,13 @@
             [re-frame.core :as rf]
             [exfn.subscriptions]
             [exfn.events]
-            [exfn.logic :as ms]))
+            [exfn.logic :as ms]
+            [goog.string.format]))
+
+(defn pad-zero [n]
+  (if (< n 10)
+    (str "0" n)
+    (str n)))
 
 (defn x->svg [x]
   (case x
@@ -93,8 +99,10 @@
                                        "unrevealed-cell")
                               :on-click (fn [_]
                                           (when (not (or game-over? game-won?))
+                                            (rf/dispatch-sync [:start-timer])
                                             (rf/dispatch-sync [:cell-click [x y]])))
                               :on-context-menu (fn [e] 
+                                                 (rf/dispatch [:start-timer])
                                                  (rf/dispatch-sync [:toggle-flag [x y]])
                                                  (.preventDefault e)
                                                  (.stopPropagation e))}
@@ -138,9 +146,10 @@
        [board]]]
      [:div.col
       (let [game-over? @(rf/subscribe [:game-over?])
-            mines @(rf/subscribe [:mines])
-            flags @(rf/subscribe [:flags])
-            game-won? @(rf/subscribe [:game-won?])]
+            mines      @(rf/subscribe [:mines])
+            flags      @(rf/subscribe [:flags])
+            game-won?  @(rf/subscribe [:game-won?])
+            time       @(rf/subscribe [:time])]
         [:div
          [:div.row
           [:i.fas.fa-flag.mines]]
@@ -149,22 +158,27 @@
          [:div.row
           [:i.fas.fa-clock.mines]]
          [:div.row
-          [:p.mines "00:00"]]
+          [:p.mines (str (pad-zero (quot time 60)) ":" (pad-zero (rem time 60)))]]
          [:div.row
           [:div {:style {:text-align :center}}
            [:button.btn-primary
             {:style {:width "200px"
                      :text-align :center
                      :display :inline}
-             :on-click #(rf/dispatch-sync [:initialize])}
+             :on-click (fn [_]
+                         (rf/dispatch-sync [:stop-timer])
+                         (rf/dispatch-sync [:initialize]))}
             "New Game"]]]
          [:div.row
-          [:p.game-over
-           {:style {:display (if (or game-over? game-won?) :inline :none)
-                    :color (if game-over? :red :yellow)}}
-           (if game-over?
-             "Game over!"
-             [:i.fas.fa-trophy])]]])]]])
+          [:div {:style {:text-align :center}}
+           [:p.game-over
+            {:style {:display (if (or game-over? game-won?) :inline :none)
+                     :color (if game-over? :red :yellow)}}
+            (if game-over?
+              "Game over!"
+              [:div 
+               [:div [:i.fas.fa-trophy]]
+               "Winner!"])]]]])]]])
 
 ;; -- After-Load --------------------------------------------------------------------
 ;; Do this after the page has loaded.
@@ -181,23 +195,30 @@
 (defonce initialize (rf/dispatch-sync [:initialize]))
 
 (comment
-  
+
   "Some dev-test events for reseting board."
   (rf/dispatch-sync [:set-game-over])
 
-  (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [8 8] :mines 10})
-                             :mines 10
-                             :revealed #{}
-                             :game-over? false
-                             :game-won? false
-                             :flags #{}}])
+  (do
+    (rf/dispatch-sync [:stop-timer])
+    (rf/dispatch-sync [:reset {:board      (ms/generate-full-board {:dimensions [8 8]
+                                                                    :mines      10})
+                               :mines      10
+                               :revealed   #{}
+                               :ticking?   false
+                               :time       0
+                               :ticker-handle nil
+                               :game-over? false
+                               :game-won?  false
+                               :flags      #{}}]))
 
   (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [6 6] :mines 6})
                              :mines 6
                              :flags #{}
                              :revealed #{}
+                             :ticking? false
+                             :time 0
+                             :ticker-handle nil
                              :game-won? false
                              :game-over? false}])
-
-
-)
+  )
