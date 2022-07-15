@@ -8,11 +8,11 @@
 
 (rf/reg-event-db
  :initialize
- (fn [_ _]
-   {:board (bf/generate-full-board {:dimensions [16 16] :mines 40})
+ (fn [_ [_ [size mines]]]
+   {:board (bf/generate-full-board {:dimensions [size size] :mines mines})
     :revealed #{}
     :flags #{}
-    :mines 40
+    :mines mines
     :ticking? false
     :ticker-handle nil
     :started false
@@ -139,15 +139,16 @@
    (let [up-flags (if (flags cell)
                     (set/difference flags #{cell})
                     (conj flags cell))]
-     (assoc db :flags up-flags))))
+     (-> db
+         (assoc :flags up-flags)
+         (assoc :started? true)))))
 
 ;; dev test events. To remove.
 
 (rf/reg-event-db
  :set-game-over
  (fn [db _]
-   (assoc db :game-over? (not (db :game-over?)))
-   ))
+   (assoc db :game-over? (not (db :game-over?)))))
 
 (rf/reg-event-db
  :reset
