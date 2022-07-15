@@ -79,7 +79,10 @@
         revealed    @(rf/subscribe [:revealed])
         flags       @(rf/subscribe [:flags])
         game-won?   @(rf/subscribe [:game-won?])
-        game-over?  @(rf/subscribe [:game-over?])]
+        game-over?  @(rf/subscribe [:game-over?])
+        ticking?    @(rf/subscribe [:ticking?])
+        started?    @(rf/subscribe [:started?])
+        paused?    (and started? (not ticking?))]
     [:div
      (for [x (range board-width)]
        [:div.row {:style {:width "100%"
@@ -91,6 +94,10 @@
             [:div.board-cell {:style {:width  side-length
                                       :height side-length}
                               :class (cond
+                                       
+                                       (and started? (not ticking?))
+                                       "paused-cell"
+
                                        (and (revealed [x y])
                                             (number? cell-contents))
                                        "revealed-cell"
@@ -98,16 +105,24 @@
                                        :else
                                        "unrevealed-cell")
                               :on-click (fn [_]
-                                          (when (not (or game-over? game-won?))
+                                          (when (not (or game-over? game-won? paused?))
                                             (rf/dispatch-sync [:start-timer])
                                             (rf/dispatch-sync [:cell-click [x y]])))
                               :on-context-menu (fn [e] 
-                                                 (rf/dispatch [:start-timer])
-                                                 (rf/dispatch-sync [:toggle-flag [x y]])
-                                                 (.preventDefault e)
-                                                 (.stopPropagation e))}
+                                                 (if (not (or game-over? game-won? paused?))
+                                                   (do
+                                                     (rf/dispatch [:start-timer])
+                                                     (rf/dispatch-sync [:toggle-flag [x y]])
+                                                     (.preventDefault e)
+                                                     (.stopPropagation e))
+                                                   (do
+                                                     (.preventDefault e)
+                                                     (.stopPropagation e))))}
 
              (cond
+
+               (not ticking?)
+               [:p]
 
                ;; The game is either over or won and the cell contains a mine.
                ;; then we want to show the mine.
@@ -127,14 +142,7 @@
                (and (revealed [x y]) (> cell-contents 0))
                [:p.number {:style {:height side-length
                                    :width side-length}}
-                (x->svg cell-contents)]
-
-               ;; else, its just a debug view, show the cell contents
-               ;; TODO to remove!
-               #_#_:else
-                 [:div
-                  [:p.debug (str "[" x "," y "]\n\r ")]
-                  [:p.debug cell-contents]])]))])]))
+                (x->svg cell-contents)])]))])]))
 
 ;; -- App -------------------------------------------------------------------------
 (defn app []
@@ -149,7 +157,9 @@
             mines      @(rf/subscribe [:mines])
             flags      @(rf/subscribe [:flags])
             game-won?  @(rf/subscribe [:game-won?])
-            time       @(rf/subscribe [:time])]
+            time       @(rf/subscribe [:time])
+            paused?    @(rf/subscribe [:ticking?])
+            started?   @(rf/subscribe [:started?])]
         [:div
          [:div.row
           [:i.fas.fa-flag.mines]]
@@ -159,11 +169,26 @@
           [:i.fas.fa-clock.mines]]
          [:div.row
           [:p.mines (str (pad-zero (quot time 60)) ":" (pad-zero (rem time 60)))]
-          [:i.fas.fa-pause.mines {:style {:font-size "2.5em"
-                                          :padding-bottom 20
-                                          :cursor :pointer}}]
-          #_[:i.fas.fa-play.mines {:style {:font-size "1.2em"
-                                         }}]]
+          (if paused?
+            [:i.fas.fa-pause.mines {:style {:font-size "2.5em"
+                                            :padding-bottom 20
+                                            :cursor :pointer
+                                            :display (if (and started? (not game-over?) (not game-won?))
+                                                       :inline
+                                                       :none)}
+                                    :on-click (fn [_]
+                                               (when (and (not game-over?) (not game-won?))
+                                                (rf/dispatch [:pause])))}]
+            
+            [:i.fas.fa-play.mines {:style {:font-size      "2.5em"
+                                           :padding-bottom 20
+                                           :cursor         :pointer
+                                           :display (if (and started? (not game-over?) (not game-won?))
+                                                      :inline
+                                                      :none)}
+                                   :on-click (fn [_]
+                                               (when (and (not game-over?) (not game-won?))
+                                                 (rf/dispatch [:pause])))}])]
          [:div.row
           [:div {:style {:text-align :center}}
            [:button.btn-primary
@@ -215,6 +240,7 @@
                                :ticker-handle nil
                                :game-over? false
                                :game-won?  false
+                               :started?   false
                                :flags      #{}}]))
 
   (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [6 6] :mines 6})
@@ -223,7 +249,16 @@
                              :revealed #{}
                              :ticking? false
                              :time 0
+                             :started?   false
                              :ticker-handle nil
                              :game-won? false
                              :game-over? false}])
+  
+
+  ;; wont be ticking to start the game
+  ;; game-over?     game-won?      ticking?       started?
+  ;;    F               F             F              F
+  ;;    T               F             F              T
+  ;;    F               T             T              T
+  ;;    F               F             T              T
   )

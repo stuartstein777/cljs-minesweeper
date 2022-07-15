@@ -76,3 +76,8 @@ body{
 .debug {
     color: #929292;
 }
+
+.paused-cell {
+    background-color: #606774;
+    color: #606774;
+}

@@ -36,3 +36,7 @@
 (rf/reg-sub
  :ticking?
  (fn [db _] (db :ticking?)))
+
+(rf/reg-sub
+ :started?
+ (fn [db _] (db :started?)))

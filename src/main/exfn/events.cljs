@@ -15,6 +15,7 @@
     :mines 40
     :ticking? false
     :ticker-handle nil
+    :started false
     :time 0
     :game-won? false
     :game-over? false}))
@@ -42,7 +43,6 @@
  :stop-ticker
  (fn [[handle]]
    (when (not (nil? handle))
-     (prn "stopping handle." handle)
      (js/clearInterval handle))))
 
 (rf/reg-event-fx
@@ -60,6 +60,11 @@
      (prn "stopping timer. " handle)
      {:db (assoc db :ticker-handle nil)
       :stop-ticker [handle]})))
+
+(rf/reg-event-db
+ :pause
+ (fn [db _]
+   (update db :ticking? not)))
 
 (rf/reg-fx
  :stop-if-game-finished
@@ -125,7 +130,7 @@
                   :else
                   (reveal-numbers db [x y]))]
    (prn "Finished? " (or (up-db :game-over?) (up-db :game-won?)))
-   {:db                    up-db
+   {:db                    (assoc up-db :started? true)
     :stop-if-game-finished [(or (up-db :game-over?) (up-db :game-won?)) (up-db :ticker-handle)]})))
 
 (rf/reg-event-db
