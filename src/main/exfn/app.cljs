@@ -321,10 +321,4 @@
                              :game-over? false}])
   
 
-  ;; wont be ticking to start the game
-  ;; game-over?     game-won?      ticking?       started?
-  ;;    F               F             F              F
-  ;;    T               F             F              T
-  ;;    F               T             T              T
-  ;;    F               F             T              T
   )

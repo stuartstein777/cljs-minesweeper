@@ -54,10 +54,7 @@
 (rf/reg-event-fx
  :stop-timer
  (fn [{:keys [db]} _]
-   (prn "in :stop-timer")
    (let [handle (db :ticker-handle)]
-     (prn db)
-     (prn "stopping timer. " handle)
      {:db (assoc db :ticker-handle nil)
       :stop-ticker [handle]})))
 
@@ -109,29 +106,27 @@
 (rf/reg-event-fx
  :cell-click
  (fn [{:keys [db]} [_ [x y]]]
-   (prn "cell click" x y)
- (let [contents (get-in (db :board) [x y])
-       up-db    (cond
+   (let [contents (get-in (db :board) [x y])
+         up-db    (cond
 
                   ;; clicked a mine, game over :(
-                  (= contents :mine)
-                  (assoc db :game-over? true)
+                    (= contents :mine)
+                    (assoc db :game-over? true)
 
                   ;; clicked a blank, reveal all cells until numbers.
-                  (= contents 0)
-                  (reveal-blank db [x y])
+                    (= contents 0)
+                    (reveal-blank db [x y])
 
                   ;; clicked a number, that isn't a blank cell. Reveal with flags
                   ;; the cell also has to be revealed
-                  (and (number? contents) ((db :revealed) [x y]))
-                  (reveal-numbers-with-flags db [x y])
+                    (and (number? contents) ((db :revealed) [x y]))
+                    (reveal-numbers-with-flags db [x y])
 
                   ;; clicked an unrevealed number, so reveal it.
-                  :else
-                  (reveal-numbers db [x y]))]
-   (prn "Finished? " (or (up-db :game-over?) (up-db :game-won?)))
-   {:db                    (assoc up-db :started? true)
-    :stop-if-game-finished [(or (up-db :game-over?) (up-db :game-won?)) (up-db :ticker-handle)]})))
+                    :else
+                    (reveal-numbers db [x y]))]
+     {:db                    (assoc up-db :started? true)
+      :stop-if-game-finished [(or (up-db :game-over?) (up-db :game-won?)) (up-db :ticker-handle)]})))
 
 (rf/reg-event-db
  :toggle-flag
