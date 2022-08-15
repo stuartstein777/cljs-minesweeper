@@ -307,18 +307,6 @@
                                :game-won?  false
                                :started?   false
                                :flags      #{}}]))
-
-
-  (rf/dispatch-sync [:reset {:board (ms/generate-full-board {:dimensions [32 32] :mines 80})
-                             :mines 80
-                             :flags #{}
-                             :revealed #{}
-                             :ticking? false
-                             :time 0
-                             :started?   false
-                             :ticker-handle nil
-                             :game-won? false
-                             :game-over? false}])
-  
+ 
 
   )

@@ -67,9 +67,13 @@
  :stop-if-game-finished
  (fn [[finished? handle]]
    (when finished?
-     (prn "finished. So stop handle")
      (js/clearInterval handle))))
 
+;; ---------------------------------------------------------------------
+;; Handles the user clicking a number.
+;; If the user has succesfully flagged the surrounding squares, then we
+;; call the reveal method to reveal the revealed cell neighbours.
+;;
 (defn reveal-numbers-with-flags
   [{:keys [board mines] :as db} [x y]]
   (let [revealed (bf/reveal-with-flags (db :flags) (db :board) [x y])]
@@ -103,6 +107,9 @@
         (assoc :flags (set/difference (db :flags) #{[x y]}))
         (assoc :game-won? game-won?))))
 
+;; Handles the user clicking on a cell.
+;; Right click places mine.
+;; Left click reveals the cell.
 (rf/reg-event-fx
  :cell-click
  (fn [{:keys [db]} [_ [x y]]]
@@ -139,11 +146,6 @@
          (assoc :started? true)))))
 
 ;; dev test events. To remove.
-
-(rf/reg-event-db
- :set-game-over
- (fn [db _]
-   (assoc db :game-over? (not (db :game-over?)))))
 
 (rf/reg-event-db
  :reset
